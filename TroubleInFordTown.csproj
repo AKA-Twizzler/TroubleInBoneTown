@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>TroubleInFordTown</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>15.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="TroubleInFordTown.Resources.brainwash_charge.wav" />
+    <None Remove="TroubleInFordTown.Resources.innocents_line1.wav" />
+    <None Remove="TroubleInFordTown.Resources.innocents_line2.wav" />
+    <None Remove="TroubleInFordTown.Resources.innocents_song1.wav" />
+    <None Remove="TroubleInFordTown.Resources.innocents_song2.wav" />
+    <None Remove="TroubleInFordTown.Resources.jester_line1.wav" />
+    <None Remove="TroubleInFordTown.Resources.jester_line2.wav" />
+    <None Remove="TroubleInFordTown.Resources.jester_song1.wav" />
+    <None Remove="TroubleInFordTown.Resources.jester_song2.wav" />
+    <None Remove="TroubleInFordTown.Resources.lonewolf_song1.wav" />
+    <None Remove="TroubleInFordTown.Resources.traitors_line1.wav" />
+    <None Remove="TroubleInFordTown.Resources.traitors_line2.wav" />
+    <None Remove="TroubleInFordTown.Resources.traitors_song1.wav" />
+    <None Remove="TroubleInFordTown.Resources.traitors_song2.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.brainwash_charge.wav" LogicalName="TroubleInFordTown.Resources.brainwash_charge.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.innocents_line1.wav" LogicalName="TroubleInFordTown.Resources.innocents_line1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.innocents_line2.wav" LogicalName="TroubleInFordTown.Resources.innocents_line2.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.innocents_song1.wav" LogicalName="TroubleInFordTown.Resources.innocents_song1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.innocents_song2.wav" LogicalName="TroubleInFordTown.Resources.innocents_song2.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.jester_line1.wav" LogicalName="TroubleInFordTown.Resources.jester_line1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.jester_line2.wav" LogicalName="TroubleInFordTown.Resources.jester_line2.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.jester_song1.wav" LogicalName="TroubleInFordTown.Resources.jester_song1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.jester_song2.wav" LogicalName="TroubleInFordTown.Resources.jester_song2.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.lonewolf_song1.wav" LogicalName="TroubleInFordTown.Resources.lonewolf_song1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.traitors_line1.wav" LogicalName="TroubleInFordTown.Resources.traitors_line1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.traitors_line2.wav" LogicalName="TroubleInFordTown.Resources.traitors_line2.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.traitors_song1.wav" LogicalName="TroubleInFordTown.Resources.traitors_song1.wav" />
+    <EmbeddedResource Include="TroubleInFordTown.Resources.traitors_song2.wav" LogicalName="TroubleInFordTown.Resources.traitors_song2.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="MelonLoader" />
+    <Reference Include="Il2CppSLZ.Marrow" />
+    <Reference Include="UnityEngine.CoreModule" />
+    <Reference Include="Unity.TextMeshPro" />
+    <Reference Include="Il2CppInterop.Runtime" />
+    <Reference Include="LabFusion">
+      <HintPath>../../../mnt/d/SteamLibrary/steamapps/common/BONELAB/Mods/LabFusion.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule" />
+    <Reference Include="BoneLib">
+      <HintPath>../../../mnt/d/SteamLibrary/steamapps/common/BONELAB/Mods/BoneLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="0Harmony" />
+    <Reference Include="Il2Cppmscorlib" />
+    <Reference Include="UnityEngine.UI" />
+    <Reference Include="Il2CppUniTask" />
+  </ItemGroup>
+</Project>
