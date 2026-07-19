@@ -169,7 +169,7 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private readonly WristIndicator _wristIndicator = new WristIndicator();
 
-	private readonly TraitorBuyMenu _buyMenu = new TraitorBuyMenu();
+	private readonly StatsPage _statsPage = new StatsPage();
 
 	private readonly RolesInfoMenu _rolesInfoMenu = new RolesInfoMenu();
 
@@ -201,25 +201,29 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	public int TraitorCount { get; set; } = 1;
 
-	public int PrepSeconds { get; set; } = 30;
+	public int PrepSeconds { get; set; } = 5;
 
 	public int RoundMinutes { get; set; } = 5;
 
-	public bool DetectiveEnabled { get; set; } = true;
-
-	public bool JesterEnabled { get; set; } = true;
-
-	public bool LoneWolfEnabled { get; set; } = true;
-
-	public bool GlitchEnabled { get; set; } = true;
-
-	public bool HypnotistEnabled { get; set; } = true;
-
-	public bool ZombieEnabled { get; set; } = true;
-
 	public bool WinMusicEnabled { get; set; } = true;
 
-	public bool OneStabKnifeEnabled { get; set; }
+	public int LootThreshold { get; set; } = 5;
+
+	public int GameVariant { get; set; } = 0;
+
+	public bool SprintEnabled { get; set; } = true;
+
+	public bool FootprintsEnabled { get; set; } = true;
+
+	public bool BlackFogEnabled { get; set; } = true;
+
+	public bool DisguiseEnabled { get; set; } = true;
+
+	public int BlackFogTimer { get; set; } = 120;
+
+	public bool RemoveDisguiseOnKill { get; set; } = true;
+
+	public int MinPlayers { get; set; } = 3;
 
 	public override bool DisableDevTools => true;
 
@@ -272,131 +276,138 @@ public class TroubleInFordTownGamemode : Gamemode
 	public override GroupElementData CreateSettingsGroup()
 	{
 		GroupElementData groupElementData = base.CreateSettingsGroup();
-		GroupElementData groupElementData2 = new GroupElementData("General");
-		groupElementData.AddElement(groupElementData2);
-		groupElementData2.AddElement(new IntElementData
+		GroupElementData generalGroup = new GroupElementData("General");
+		groupElementData.AddElement(generalGroup);
+		generalGroup.AddElement(new IntElementData
 		{
-			Title = "Traitor Count",
-			Value = TraitorCount,
-			Increment = 1,
-			MinValue = 1,
-			MaxValue = 4,
-			OnValueChanged = delegate(int v)
-			{
-				TraitorCount = v;
-			}
-		});
-		groupElementData2.AddElement(new IntElementData
-		{
-			Title = "Prep Time (Seconds)",
-			Value = PrepSeconds,
-			Increment = 5,
-			MinValue = 5,
-			MaxValue = 60,
-			OnValueChanged = delegate(int v)
-			{
-				PrepSeconds = v;
-			}
-		});
-		groupElementData2.AddElement(new IntElementData
-		{
-			Title = "Round Length (Minutes)",
+			Title = "Round Timer (0 = Unlimited)",
 			Value = RoundMinutes,
 			Increment = 1,
-			MinValue = 1,
+			MinValue = 0,
 			MaxValue = 15,
 			OnValueChanged = delegate(int v)
 			{
 				RoundMinutes = v;
 			}
 		});
-		GroupElementData groupElementData3 = new GroupElementData("Extra Roles");
-		groupElementData.AddElement(groupElementData3);
-		groupElementData3.AddElement(new BoolElementData
+		generalGroup.AddElement(new IntElementData
 		{
-			Title = "Detective",
-			Value = DetectiveEnabled,
-			OnValueChanged = delegate(bool v)
+			Title = "Prep Time (Seconds)",
+			Value = PrepSeconds,
+			Increment = 1,
+			MinValue = 3,
+			MaxValue = 30,
+			OnValueChanged = delegate(int v)
 			{
-				DetectiveEnabled = v;
+				PrepSeconds = v;
 			}
 		});
-		groupElementData3.AddElement(new BoolElementData
+		generalGroup.AddElement(new IntElementData
 		{
-			Title = "Jester",
-			Value = JesterEnabled,
-			OnValueChanged = delegate(bool v)
+			Title = "Min Players",
+			Value = MinPlayers,
+			Increment = 1,
+			MinValue = 2,
+			MaxValue = 12,
+			OnValueChanged = delegate(int v)
 			{
-				JesterEnabled = v;
+				MinPlayers = v;
 			}
 		});
-		groupElementData3.AddElement(new BoolElementData
+		GroupElementData modeGroup = new GroupElementData("Mode");
+		groupElementData.AddElement(modeGroup);
+		modeGroup.AddElement(new IntElementData
 		{
-			Title = "Lone Wolf",
-			Value = LoneWolfEnabled,
-			OnValueChanged = delegate(bool v)
+			Title = "Game Variant",
+			Value = GameVariant,
+			Increment = 1,
+			MinValue = 0,
+			MaxValue = 1,
+			OnValueChanged = delegate(int v)
 			{
-				LoneWolfEnabled = v;
+				GameVariant = v;
 			}
 		});
-		groupElementData3.AddElement(new BoolElementData
+		modeGroup.AddElement(new IntElementData
 		{
-			Title = "Glitch",
-			Value = GlitchEnabled,
-			OnValueChanged = delegate(bool v)
+			Title = "Gold Threshold",
+			Value = LootThreshold,
+			Increment = 1,
+			MinValue = 3,
+			MaxValue = 10,
+			OnValueChanged = delegate(int v)
 			{
-				GlitchEnabled = v;
+				LootThreshold = v;
 			}
 		});
-		groupElementData3.AddElement(new BoolElementData
+		GroupElementData abilitiesGroup = new GroupElementData("Murderer Abilities");
+		groupElementData.AddElement(abilitiesGroup);
+		abilitiesGroup.AddElement(new BoolElementData
 		{
-			Title = "Hypnotist (Traitor)",
-			Value = HypnotistEnabled,
+			Title = "Enable Sprint",
+			Value = SprintEnabled,
 			OnValueChanged = delegate(bool v)
 			{
-				HypnotistEnabled = v;
+				SprintEnabled = v;
 			}
 		});
-		groupElementData3.AddElement(new BoolElementData
+		abilitiesGroup.AddElement(new BoolElementData
 		{
-			Title = "Zombie",
-			Value = ZombieEnabled,
+			Title = "Enable Footprints",
+			Value = FootprintsEnabled,
 			OnValueChanged = delegate(bool v)
 			{
-				ZombieEnabled = v;
+				FootprintsEnabled = v;
 			}
 		});
-		GroupElementData groupElementData4 = new GroupElementData("Win Music");
-		groupElementData.AddElement(groupElementData4);
-		groupElementData4.AddElement(new BoolElementData
+		abilitiesGroup.AddElement(new BoolElementData
+		{
+			Title = "Enable Black Fog",
+			Value = BlackFogEnabled,
+			OnValueChanged = delegate(bool v)
+			{
+				BlackFogEnabled = v;
+			}
+		});
+		abilitiesGroup.AddElement(new BoolElementData
+		{
+			Title = "Enable Corpse Disguise",
+			Value = DisguiseEnabled,
+			OnValueChanged = delegate(bool v)
+			{
+				DisguiseEnabled = v;
+			}
+		});
+		abilitiesGroup.AddElement(new IntElementData
+		{
+			Title = "Black Fog Timer (Seconds)",
+			Value = BlackFogTimer,
+			Increment = 10,
+			MinValue = 30,
+			MaxValue = 300,
+			OnValueChanged = delegate(int v)
+			{
+				BlackFogTimer = v;
+			}
+		});
+		abilitiesGroup.AddElement(new BoolElementData
+		{
+			Title = "Remove Disguise on Kill",
+			Value = RemoveDisguiseOnKill,
+			OnValueChanged = delegate(bool v)
+			{
+				RemoveDisguiseOnKill = v;
+			}
+		});
+		GroupElementData audioGroup = new GroupElementData("Audio");
+		groupElementData.AddElement(audioGroup);
+		audioGroup.AddElement(new BoolElementData
 		{
 			Title = "Play Win Song",
 			Value = WinMusicEnabled,
 			OnValueChanged = delegate(bool v)
 			{
 				WinMusicEnabled = v;
-			}
-		});
-		GroupElementData groupElementData5 = new GroupElementData("Karma");
-		groupElementData.AddElement(groupElementData5);
-		groupElementData5.AddElement(new BoolElementData
-		{
-			Title = "Enable Karma System",
-			Value = KarmaManager.Enabled,
-			OnValueChanged = delegate(bool v)
-			{
-				KarmaManager.Enabled = v;
-			}
-		});
-		GroupElementData groupElementData6 = new GroupElementData("Traitor Gear");
-		groupElementData.AddElement(groupElementData6);
-		groupElementData6.AddElement(new BoolElementData
-		{
-			Title = "One-Stab Knife (one-hit kill)",
-			Value = OneStabKnifeEnabled,
-			OnValueChanged = delegate(bool v)
-			{
-				OneStabKnifeEnabled = v;
 			}
 		});
 		return groupElementData;
@@ -444,11 +455,11 @@ public class TroubleInFordTownGamemode : Gamemode
 		CorpseSpawnEvent.OnTriggeredWithValue += OnCorpseSpawn;
 		try
 		{
-			_buyMenu.Register(this);
+			_statsPage.Register();
 		}
 		catch (Exception ex)
 		{
-			MelonLogger.Warning("[FordTown] Traitor Shop menu unavailable: " + ex.Message);
+			MelonLogger.Warning("[MurderLab] Stats page unavailable: " + ex.Message);
 		}
 		try
 		{
@@ -533,7 +544,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		_hypnotist.Cleanup();
 		try
 		{
-			_buyMenu.Unregister();
+			_statsPage.Unregister();
 		}
 		catch
 		{
@@ -652,7 +663,7 @@ public class TroubleInFordTownGamemode : Gamemode
 			TeamManager.UnassignAllPlayers();
 		}
 		FusionOverrides.ForceUpdateOverrides();
-		_buyMenu.Refresh();
+		_statsPage.Refresh();
 	}
 
 	protected override void OnUpdate()
@@ -688,7 +699,7 @@ public class TroubleInFordTownGamemode : Gamemode
 					if (_hasPrevHeadPos)
 					{
 						Vector3 val2 = val - _prevHeadPos;
-						if (((Vector3)(ref val2)).sqrMagnitude > 6.25f)
+						if (val2.sqrMagnitude > 6.25f)
 						{
 							_teleportCooldown = 8;
 						}
@@ -1100,7 +1111,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		Transform headset = RigData.Refs.Headset;
 		Vector3 val = headset.forward;
 		val.y = 0f;
-		val = ((((Vector3)(ref val)).sqrMagnitude > 0.0001f) ? ((Vector3)(ref val)).normalized : Vector3.forward);
+		val = ((val.sqrMagnitude > 0.0001f) ? val.normalized : Vector3.forward);
 		Vector3 position = headset.position + val * 0.5f - Vector3.up * 0.55f;
 		Spawnable spawnable = LocalAssetSpawner.CreateSpawnable(barcode);
 		NetworkAssetSpawner.Spawn(new NetworkAssetSpawner.SpawnRequestInfo
@@ -1372,7 +1383,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		}
 		if (player.IsMe)
 		{
-			_buyMenu.Refresh();
+			_statsPage.Refresh();
 		}
 		if (team == DetectiveTeam && !player.IsMe)
 		{
@@ -1599,7 +1610,7 @@ public class TroubleInFordTownGamemode : Gamemode
 			return;
 		}
 		TraitorPoints.Reset();
-		_buyMenu.Refresh();
+		_statsPage.Refresh();
 		List<string> list = new List<string>();
 		foreach (byte player in TraitorTeam.Players)
 		{
@@ -2226,7 +2237,7 @@ public class TroubleInFordTownGamemode : Gamemode
 				CultureInfo invariantCulture = CultureInfo.InvariantCulture;
 				ushort num = ushort.Parse(array[0]);
 				Vector3 deathPosition = default(Vector3);
-				((Vector3)(ref deathPosition))._002Ector(float.Parse(array[1], invariantCulture), float.Parse(array[2], invariantCulture), float.Parse(array[3], invariantCulture));
+				deathPosition = new Vector3(float.Parse(array[1], invariantCulture), float.Parse(array[2], invariantCulture), float.Parse(array[3], invariantCulture));
 				string text = array[4];
 				string roleColor = array[5];
 				string weaponName = (string.IsNullOrEmpty(array[6]) ? null : array[6]);

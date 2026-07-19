@@ -114,12 +114,12 @@ public class CorpseInspectorUI
 		}
 		Vector3 val = _showing.Position + Vector3.up * 0.7f;
 		Vector3 val2 = headset.position - val;
-		if (((Vector3)(ref val2)).sqrMagnitude < 0.001f)
+		if (val2.sqrMagnitude < 0.001f)
 		{
 			val2 = Vector3.forward;
 		}
 		_root.transform.position = val;
-		_root.transform.rotation = Quaternion.LookRotation(-((Vector3)(ref val2)).normalized);
+		_root.transform.rotation = Quaternion.LookRotation(-val2.normalized);
 		float num = Time.realtimeSinceStartup - _showing.TimeOfDeath;
 		string text = ((num < 60f) ? $"{Mathf.FloorToInt(num)}s ago" : $"{Mathf.FloorToInt(num / 60f)}m {Mathf.FloorToInt(num % 60f)}s ago");
 		string text2 = (string.IsNullOrEmpty(_showing.WeaponName) ? "<size=85%><color=#aaaaaa>Weapon: Unknown</color></size>" : ("<size=85%>Weapon: <b>" + _showing.WeaponName + "</b></size>"));

@@ -5,7 +5,7 @@ using MelonLoader;
 
 namespace TroubleInFordTown;
 
-public class TTTMod : MelonMod
+public class MurderMod : MelonMod
 {
 	private bool _registered;
 
@@ -31,12 +31,12 @@ public class TTTMod : MelonMod
 		}
 		try
 		{
-			((MelonBase)this).HarmonyInstance.CreateClassProcessor(typeof(ZombieBiteDamagePatch)).Patch();
+			((MelonBase)this).HarmonyInstance.CreateClassProcessor(typeof(MurdererDamagePatch)).Patch();
 			_patched = true;
 		}
 		catch (Exception ex)
 		{
-			((MelonBase)this).LoggerInstance.Warning("Zombie damage patch could not be applied on this build (zombies may not one-shot, everything else still works): " + ex.Message);
+			((MelonBase)this).LoggerInstance.Warning("Murderer damage patch could not be applied on this build (Murderer may not one-shot, everything else still works): " + ex.Message);
 		}
 	}
 
@@ -50,7 +50,7 @@ public class TTTMod : MelonMod
 		{
 			GamemodeRegistration.LoadGamemodes(Assembly.GetExecutingAssembly());
 			_registered = true;
-			((MelonBase)this).LoggerInstance.Msg("Trouble In FordTown registered! Select it from the Fusion menu's Gamemodes tab.");
+			((MelonBase)this).LoggerInstance.Msg("MurderLab registered! Select it from the Fusion menu's Gamemodes tab.");
 		}
 		catch (Exception ex)
 		{

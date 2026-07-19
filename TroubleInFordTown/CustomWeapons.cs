@@ -194,9 +194,9 @@ public static class CustomWeapons
 		//IL_002d: Unknown result type (might be due to invalid IL or missing references)
 		//IL_002e: Unknown result type (might be due to invalid IL or missing references)
 		Color baseColor = default(Color);
-		((Color)(ref baseColor))._002Ector(1f, 0.78f, 0.1f);
+		baseColor = new Color(1f, 0.78f, 0.1f);
 		Color emissiveColor = default(Color);
-		((Color)(ref emissiveColor))._002Ector(0.4f, 0.28f, 0f);
+		emissiveColor = new Color(0.4f, 0.28f, 0f);
 		TintAllRenderers(item, baseColor, emissiveColor);
 	}
 
@@ -205,9 +205,9 @@ public static class CustomWeapons
 		//IL_002d: Unknown result type (might be due to invalid IL or missing references)
 		//IL_002e: Unknown result type (might be due to invalid IL or missing references)
 		Color baseColor = default(Color);
-		((Color)(ref baseColor))._002Ector(0.06f, 0f, 0.12f);
+		baseColor = new Color(0.06f, 0f, 0.12f);
 		Color emissiveColor = default(Color);
-		((Color)(ref emissiveColor))._002Ector(0.25f, 0f, 0.45f);
+		emissiveColor = new Color(0.25f, 0f, 0.45f);
 		TintAllRenderers(item, baseColor, emissiveColor);
 	}
 

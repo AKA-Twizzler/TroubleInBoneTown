@@ -77,7 +77,7 @@ public static class CorpseManager
 		//IL_007d: Unknown result type (might be due to invalid IL or missing references)
 		ownerSmallId = 0;
 		corpsePos = Vector3.zero;
-		direction = ((Vector3)(ref direction)).normalized;
+		direction = direction.normalized;
 		float num = float.MaxValue;
 		CorpseProxy corpseProxy = null;
 		foreach (CorpseProxy corpse in _corpses)
@@ -91,7 +91,7 @@ public static class CorpseManager
 			if (!(num2 < 0f) && !(num2 > maxDistance))
 			{
 				Vector3 val2 = val - direction * num2;
-				float magnitude = ((Vector3)(ref val2)).magnitude;
+				float magnitude = val2.magnitude;
 				if (!(magnitude > 1f) && magnitude < num)
 				{
 					num = magnitude;

@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>TroubleInFordTown</AssemblyName>
+    <AssemblyName>MurderLab</AssemblyName>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
-    <LangVersion>15.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>

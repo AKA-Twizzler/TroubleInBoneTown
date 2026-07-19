@@ -102,7 +102,7 @@ public class WristIndicator
 		{
 			Vector3 val = ((Component)leftHand).transform.position + Vector3.up * 0.12f;
 			Vector3 val2 = val - headset.position;
-			float magnitude = ((Vector3)(ref val2)).magnitude;
+			float magnitude = val2.magnitude;
 			bool flag = false;
 			try
 			{

@@ -1,0 +1,4 @@
+/home/trism/murderlab/obj/Release/net6.0/TroubleInFordTown.csproj.AssemblyReference.cache
+/home/trism/murderlab/obj/Release/net6.0/TroubleInFordTown.GeneratedMSBuildEditorConfig.editorconfig
+/home/trism/murderlab/obj/Release/net6.0/TroubleInFordTown.csproj.CoreCompileInputs.cache
+/home/trism/murderlab/obj/Release/net6.0/TroubleInFordTown.sourcelink.json

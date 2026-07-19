@@ -222,7 +222,7 @@ public class RoleLabels
 				((Graphic)label.Text).color = color;
 				Vector3 val = head.position + Vector3.up * 0.5f;
 				Vector3 val2 = val - headset.position;
-				if (((Vector3)(ref val2)).sqrMagnitude < 0.0001f)
+				if (val2.sqrMagnitude < 0.0001f)
 				{
 					val2 = Vector3.forward;
 				}
