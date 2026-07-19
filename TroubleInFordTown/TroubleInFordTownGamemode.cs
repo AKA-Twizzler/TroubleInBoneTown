@@ -60,6 +60,10 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private const string MurdererColor = "#b40d19";
 
+	// Barcode for the revolver spawned when a Bystander reaches LootThreshold.
+	// Uses the first TiFT sidearm barcode as placeholder — replace with actual revolver crate barcode.
+	private const string RevolverBarcode = "c1534c5a-fcfc-4f43-8fb0-d29531393131";
+
 	private const string BystanderColor = "#0d76ea";
 
 	private const string SpectatorColor = "#aaaaaa";
@@ -77,6 +81,15 @@ public class TroubleInFordTownGamemode : Gamemode
 	private ushort _gunHolderSmallID;
 
 	private int _currentLootCount;
+
+	public int CurrentLootCount => _currentLootCount;
+
+	public void IncrementLootCount()
+	{
+		_currentLootCount++;
+	}
+
+	private readonly LootManager _lootManager = new LootManager();
 
 	private bool _roundStarted;
 
@@ -492,6 +505,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		GamemodeHelper.SetSpawnPoints(GamemodeMarker.FilterMarkers());
 		GamemodeHelper.TeleportToSpawnPoint();
 		FusionOverrides.ForceUpdateOverrides();
+		_lootManager.Initialize(this);
 		// MurderLab: Show black screen immediately instead of free-roam notification.
 		// Roles are revealed after the prep timer expires.
 		_blackScreen.Create();
@@ -507,10 +521,13 @@ public class TroubleInFordTownGamemode : Gamemode
 		_oneMinuteLeft = false;
 		_localDied = false;
 		_deadPlayers.Clear();
+		_currentLootCount = 0;
+		_lootManager.OnLootThresholdReached -= OnLootThresholdReached;
 		ClearSpectatorEffects();
 		_wristIndicator.Destroy();
 		_roleLabels.ClearAll();
 		_holsterHider.ClearAll();
+		_lootManager.OnRoundEnd();
 		CorpseManager.ClearAll();
 		CorpseManager.DestroyUI();
 		DespawnLoadoutItems();
@@ -570,6 +587,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		UpdateSpectators();
 		UpdateWristIndicator();
 		CorpseManager.Update();
+		_lootManager.Update();
 		_roleLabels.Update(this);
 		if (_roundStarted)
 		{
@@ -1155,6 +1173,22 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			LocalInventory.SetAmmo(100000);
 		}
+		_lootManager.OnRoundStart();
+		_lootManager.OnLootThresholdReached += OnLootThresholdReached;
+	}
+
+	private void OnLootThresholdReached()
+	{
+		// Bystander reached LootThreshold — spawn a revolver for them
+		SpawnLoadoutItem(RevolverBarcode, false, null);
+		Notifier.Send(new Notification
+		{
+			Title = "<color=#0d76ea>LOOT THRESHOLD REACHED!</color>",
+			Message = "A revolver has been spawned at your position.",
+			ShowPopup = true,
+			PopupLength = 4f,
+			Type = NotificationType.INFORMATION
+		});
 	}
 
 	private void OnPlayerAction(PlayerID player, PlayerActionType type, PlayerID otherPlayer = null)
