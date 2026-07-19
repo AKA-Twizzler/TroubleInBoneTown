@@ -179,6 +179,12 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private readonly HypnotistController _hypnotist = new HypnotistController();
 
+	private readonly BlackScreenController _blackScreen = new BlackScreenController();
+
+	private bool _prepRolesRevealed;
+
+	private float _prepRevealTimer;
+
 	private readonly List<ushort> _spawnedLoadoutItems = new List<ushort>();
 
 	private readonly Dictionary<ushort, Vector3> _lastKnownPositions = new Dictionary<ushort, Vector3>();
@@ -218,6 +224,20 @@ public class TroubleInFordTownGamemode : Gamemode
 	public bool BlackFogEnabled { get; set; } = true;
 
 	public bool DisguiseEnabled { get; set; } = true;
+
+	public bool OneStabKnifeEnabled { get; set; } = true;
+
+	public bool DetectiveEnabled { get; set; } = true;
+
+	public bool JesterEnabled { get; set; } = true;
+
+	public bool LoneWolfEnabled { get; set; } = true;
+
+	public bool GlitchEnabled { get; set; } = true;
+
+	public bool ZombieEnabled { get; set; } = true;
+
+	public bool HypnotistEnabled { get; set; } = true;
 
 	public int BlackFogTimer { get; set; } = 120;
 
@@ -622,14 +642,11 @@ public class TroubleInFordTownGamemode : Gamemode
 		GamemodeHelper.SetSpawnPoints(GamemodeMarker.FilterMarkers());
 		GamemodeHelper.TeleportToSpawnPoint();
 		FusionOverrides.ForceUpdateOverrides();
-		Notifier.Send(new Notification
-		{
-			Title = "Trouble In FordTown",
-			Message = $"Roles will be assigned in {PrepSeconds} seconds. Get ready!",
-			ShowPopup = true,
-			PopupLength = 5f,
-			Type = NotificationType.INFORMATION
-		});
+		// MurderLab: Show black screen immediately instead of free-roam notification.
+		// Roles are revealed after the prep timer expires.
+		_blackScreen.Create();
+		_blackScreen.Show();
+		_prepRolesRevealed = false;
 	}
 
 	public override void OnGamemodeStopped()
@@ -762,12 +779,31 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			return;
 		}
-		if (!_roundStarted && _elapsedTime >= (float)PrepSeconds)
+		// MurderLab prep phase:
+		// 1. Black screen shows immediately (from OnGamemodeStarted)
+		// 2. At PrepSeconds elapsed: assign roles, reveal role text
+		// 3. After 3s display + 1s fade: start the round
+		if (!_roundStarted && !_prepRolesRevealed && _elapsedTime >= (float)PrepSeconds)
 		{
 			AssignRoles();
-			_roundStarted = true;
-			_elapsedTime = 0f;
-			RoundStartedEvent.TryInvoke(RoundMinutes.ToString());
+			_prepRolesRevealed = true;
+			_prepRevealTimer = 4f;
+			ShowPrepRoleText();
+		}
+		if (_prepRolesRevealed && !_roundStarted)
+		{
+			_prepRevealTimer -= Time.deltaTime;
+			if (_prepRevealTimer <= 1f && !_blackScreen.IsFading)
+			{
+				_blackScreen.StartFadeOut(1f);
+			}
+			if (_prepRevealTimer <= 0f)
+			{
+				_roundStarted = true;
+				_elapsedTime = 0f;
+				_prepRolesRevealed = false;
+				RoundStartedEvent.TryInvoke(RoundMinutes.ToString());
+			}
 		}
 		if (_roundStarted)
 		{
@@ -855,6 +891,91 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			TeamManager.TryAssignTeam(item, InnocentTeam);
 		}
+	}
+
+	private void ShowPrepRoleText()
+	{
+		//IL_003a: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0044: Expected O, but got Unknown
+		//IL_004e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0053: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0060: Unknown result type (might be due to invalid IL or missing references)
+		//IL_006a: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0074: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0079: Unknown result type (might be due to invalid IL or missing references)
+		//IL_007e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_008a: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0094: Unknown result type (might be due to invalid IL or missing references)
+		//IL_009e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00a3: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00a8: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00b4: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00be: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00c8: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00cd: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00d2: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00de: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00e8: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00f2: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00f7: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00fc: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0108: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0112: Unknown result type (might be due to invalid IL or missing references)
+		//IL_011c: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0121: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0126: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0132: Unknown result type (might be due to invalid IL or missing references)
+		//IL_013c: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0146: Unknown result type (might be due to invalid IL or missing references)
+		//IL_014b: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0150: Unknown result type (might be due to invalid IL or missing references)
+		//IL_015c: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0166: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0170: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0175: Unknown result type (might be due to invalid IL or missing references)
+		//IL_017a: Unknown result type (might be due to invalid IL or missing references)
+		Team localTeam = TeamManager.GetLocalTeam();
+		if (localTeam == null)
+		{
+			return;
+		}
+		string title;
+		string subtitle;
+		string footer1;
+		string footer2;
+		Color titleColor;
+		Color subtitleColor;
+		if (localTeam == TraitorTeam)
+		{
+			// Murderer text
+			title = "You are the murderer";
+			subtitle = "Kill everyone";
+			footer1 = "Don't get caught";
+			footer2 = "";
+			titleColor = Color.red;
+			subtitleColor = Color.red;
+		}
+		else if (localTeam == DetectiveTeam)
+		{
+			// Bystander with revolver
+			title = "You are a bystander";
+			subtitle = "with a secret weapon";
+			footer1 = "There is a murderer on the loose";
+			footer2 = "Find and kill him";
+			titleColor = Color.blue;
+			subtitleColor = new Color(0.5f, 0f, 0.5f);
+		}
+		else
+		{
+			// Bystander (normal)
+			title = "You are a bystander";
+			subtitle = "";
+			footer1 = "There is a murderer on the loose";
+			footer2 = "Don't get killed";
+			titleColor = Color.blue;
+			subtitleColor = Color.blue;
+		}
+		_blackScreen.DisplayRoleText(title, subtitle, footer1, footer2, titleColor, subtitleColor);
 	}
 
 	private void UpdateSpectators()
@@ -975,7 +1096,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		Team localTeam = TeamManager.GetLocalTeam();
 		if (localTeam != SpectatorTeam && localTeam != ZombieTeam)
 		{
-			Random random = new Random();
+			System.Random random = new System.Random();
 			string item = Defaults.Sidearms[random.Next(Defaults.Sidearms.Length)];
 			string item2 = (_localPrimaryBarcode = Defaults.Primaries[random.Next(Defaults.Primaries.Length)]);
 			List<(string, bool)> queue = new List<(string, bool)>

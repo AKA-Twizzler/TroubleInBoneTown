@@ -219,7 +219,7 @@ public static class WinMusic
 		{
 			return null;
 		}
-		return clips[Random.Range(0, clips.Count)];
+		return clips[UnityEngine.Random.Range(0, clips.Count)];
 	}
 
 	private static float MaxLength(List<AudioClip> clips)

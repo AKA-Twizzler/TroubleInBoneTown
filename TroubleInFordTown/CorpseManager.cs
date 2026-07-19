@@ -124,7 +124,7 @@ public static class CorpseManager
 		}
 	}
 
-	private static void SpawnRagdollCorpse(Vector3 position, string avatarBarcode, Action<RigManager> onSpawned)
+	private static void SpawnRagdollCorpse(Vector3 position, string avatarBarcode, System.Action<RigManager> onSpawned)
 	{
 		//IL_0006: Unknown result type (might be due to invalid IL or missing references)
 		//IL_0007: Unknown result type (might be due to invalid IL or missing references)
@@ -150,7 +150,7 @@ public static class CorpseManager
 				{
 					try
 					{
-						rig.SwapAvatarCrate(new Barcode(avatarBarcode), false, (Action<bool>)null);
+						rig.SwapAvatarCrate(new Barcode(avatarBarcode), false, (System.Action<bool>)null);
 					}
 					catch
 					{

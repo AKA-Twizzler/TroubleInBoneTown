@@ -109,7 +109,7 @@ public static class KarmaManager
 		}
 		else if (karma <= 500)
 		{
-			if (Random.value < 0.6f)
+			if (UnityEngine.Random.value < 0.6f)
 			{
 				TryKick(player, karma);
 			}
