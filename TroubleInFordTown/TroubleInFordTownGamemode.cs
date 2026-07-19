@@ -54,78 +54,29 @@ public class TroubleInFordTownGamemode : Gamemode
 		public const string TraitorKnife = "c1534c5a-1fb8-477c-afbe-2a95436f6d62";
 	}
 
-	private enum JesterDeath
-	{
-		BecamePsychopath,
-		KilledByEnemy,
-		NoKillerYet
-	}
-
-	public const string BrainwashGunBarcode = "JonLandon.BrainwashingGunTFT.Spawnable.BrainwashingGun";
-
-	private const string HypnotistMetaKey = "tift_hypnotist";
-
-	private ushort _hypnotistSmallID;
-
-	private bool _brainwashGunGiven;
-
-	private float _brainwashGunRetry;
-
 	private const string MusicMetaKey = "tift_music";
-
-	private const string OneStabMetaKey = "tift_onestab";
-
-	public const string OneStabKnifeBarcode = "JonLandon.TFTknife.Spawnable.TFTknife";
-
-	private GameObject _oneStabKnife;
-
-	private string _localPrimaryBarcode;
 
 	private readonly HashSet<ushort> _deadPlayers = new HashSet<ushort>();
 
-	private float _killedJesterTime = -999f;
+	private const string MurdererColor = "#b40d19";
 
-	private const string TraitorColor = "#ff3333";
-
-	private const string InnocentColor = "#33ff33";
-
-	private const string DetectiveColor = "#3399ff";
+	private const string BystanderColor = "#0d76ea";
 
 	private const string SpectatorColor = "#aaaaaa";
-
-	public const string JesterColor = "#ff69b4";
-
-	public const string PsychopathColor = "#cc0000";
-
-	public const string LoneWolfColor = "#ff8c00";
-
-	public const string GlitchColor = "#00ffff";
-
-	public const string HypnotistColor = "#9b30ff";
-
-	public const string ZombieColor = "#5ecc1a";
 
 	private readonly MusicPlaylist _playlist = new MusicPlaylist();
 
 	private readonly TeamManager _teamManager = new TeamManager();
 
-	private readonly Team _traitorTeam = new Team("Traitors");
+	private readonly Team _murdererTeam = new Team("Murderers");
 
-	private readonly Team _innocentTeam = new Team("Innocents");
-
-	private readonly Team _detectiveTeam = new Team("Detectives");
+	private readonly Team _bystanderTeam = new Team("Bystanders");
 
 	private readonly Team _spectatorTeam = new Team("Spectators");
 
-	private readonly Team _jesterTeam = new Team("Jesters");
+	private ushort _gunHolderSmallID;
 
-	private readonly Team _psychopathTeam = new Team("Psychopaths");
-
-	private readonly Team _loneWolfTeam = new Team("Lone Wolves");
-
-	private readonly Team _glitchTeam = new Team("Glitches");
-
-	private readonly Team _zombieTeam = new Team("Zombies");
+	private int _currentLootCount;
 
 	private bool _roundStarted;
 
@@ -155,8 +106,6 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private int _lastWristSecond = int.MinValue;
 
-	private int _lastWristTP = int.MinValue;
-
 	private object _lastWristTeam;
 
 	private bool _wristTextInit;
@@ -176,8 +125,6 @@ public class TroubleInFordTownGamemode : Gamemode
 	private readonly RoleLabels _roleLabels = new RoleLabels();
 
 	private readonly HolsterHider _holsterHider = new HolsterHider();
-
-	private readonly HypnotistController _hypnotist = new HypnotistController();
 
 	private readonly BlackScreenController _blackScreen = new BlackScreenController();
 
@@ -203,9 +150,7 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	public override string Barcode => "JonLandonMods.TroubleInFordTown";
 
-	public override string Description => "Trouble In Traitor Town, in BONELAB! Traitors secretly eliminate Innocents. The Detective leads the good side. New roles: Jester (trick an Innocent into killing you to become Psychopath!), Lone Wolf (be the last one standing), and Glitch (appears as Traitor but wins with Innocents).";
-
-	public int TraitorCount { get; set; } = 1;
+	public override string Description => "MurderLab - A social deduction gamemode for BONELAB. One Murderer, the rest are Bystanders. Can you survive?";
 
 	public int PrepSeconds { get; set; } = 5;
 
@@ -225,20 +170,6 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	public bool DisguiseEnabled { get; set; } = true;
 
-	public bool OneStabKnifeEnabled { get; set; } = true;
-
-	public bool DetectiveEnabled { get; set; } = true;
-
-	public bool JesterEnabled { get; set; } = true;
-
-	public bool LoneWolfEnabled { get; set; } = true;
-
-	public bool GlitchEnabled { get; set; } = true;
-
-	public bool ZombieEnabled { get; set; } = true;
-
-	public bool HypnotistEnabled { get; set; } = true;
-
 	public int BlackFogTimer { get; set; } = 120;
 
 	public bool RemoveDisguiseOnKill { get; set; } = true;
@@ -255,41 +186,21 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	public TeamManager TeamManager => _teamManager;
 
-	public Team TraitorTeam => _traitorTeam;
+	public Team MurdererTeam => _murdererTeam;
 
-	public Team InnocentTeam => _innocentTeam;
-
-	public Team DetectiveTeam => _detectiveTeam;
+	public Team BystanderTeam => _bystanderTeam;
 
 	public Team SpectatorTeam => _spectatorTeam;
-
-	public Team JesterTeam => _jesterTeam;
-
-	public Team PsychopathTeam => _psychopathTeam;
-
-	public Team LoneWolfTeam => _loneWolfTeam;
-
-	public Team GlitchTeam => _glitchTeam;
-
-	public Team ZombieTeam => _zombieTeam;
 
 	public TriggerEvent RoundStartedEvent { get; set; }
 
 	public TriggerEvent OneMinuteLeftEvent { get; set; }
 
-	public TriggerEvent InnocentVictoryEvent { get; set; }
+	public TriggerEvent BystanderVictoryEvent { get; set; }
 
-	public TriggerEvent TraitorVictoryEvent { get; set; }
-
-	public TriggerEvent PsychopathVictoryEvent { get; set; }
-
-	public TriggerEvent LoneWolfVictoryEvent { get; set; }
+	public TriggerEvent MurdererVictoryEvent { get; set; }
 
 	public TriggerEvent TimeUpEvent { get; set; }
-
-	public TriggerEvent BrainwashEvent { get; set; }
-
-	public TriggerEvent ZombieVictoryEvent { get; set; }
 
 	public TriggerEvent CorpseSpawnEvent { get; set; }
 
@@ -443,34 +354,20 @@ public class TroubleInFordTownGamemode : Gamemode
 		MultiplayerHooking.OnPlayerAction += OnPlayerAction;
 		FusionOverrides.OnValidateNametag += OnValidateNametag;
 		TeamManager.Register(this);
-		TeamManager.AddTeam(TraitorTeam);
-		TeamManager.AddTeam(InnocentTeam);
-		TeamManager.AddTeam(DetectiveTeam);
+		TeamManager.AddTeam(MurdererTeam);
+		TeamManager.AddTeam(BystanderTeam);
 		TeamManager.AddTeam(SpectatorTeam);
-		TeamManager.AddTeam(JesterTeam);
-		TeamManager.AddTeam(PsychopathTeam);
-		TeamManager.AddTeam(LoneWolfTeam);
-		TeamManager.AddTeam(GlitchTeam);
-		TeamManager.AddTeam(ZombieTeam);
 		TeamManager.OnAssignedToTeam += OnAssignedToTeam;
 		RoundStartedEvent = new TriggerEvent("RoundStarted", base.Relay, serverOnly: true);
 		RoundStartedEvent.OnTriggeredWithValue += OnRoundStarted;
 		OneMinuteLeftEvent = new TriggerEvent("OneMinuteLeft", base.Relay, serverOnly: true);
 		OneMinuteLeftEvent.OnTriggered += OnOneMinuteLeft;
-		InnocentVictoryEvent = new TriggerEvent("InnocentVictory", base.Relay, serverOnly: true);
-		InnocentVictoryEvent.OnTriggered += OnInnocentVictory;
-		TraitorVictoryEvent = new TriggerEvent("TraitorVictory", base.Relay, serverOnly: true);
-		TraitorVictoryEvent.OnTriggered += OnTraitorVictory;
-		PsychopathVictoryEvent = new TriggerEvent("PsychopathVictory", base.Relay, serverOnly: true);
-		PsychopathVictoryEvent.OnTriggered += OnPsychopathVictory;
-		LoneWolfVictoryEvent = new TriggerEvent("LoneWolfVictory", base.Relay, serverOnly: true);
-		LoneWolfVictoryEvent.OnTriggered += OnLoneWolfVictory;
+		BystanderVictoryEvent = new TriggerEvent("BystanderVictory", base.Relay, serverOnly: true);
+		BystanderVictoryEvent.OnTriggered += OnBystanderVictory;
+		MurdererVictoryEvent = new TriggerEvent("MurdererVictory", base.Relay, serverOnly: true);
+		MurdererVictoryEvent.OnTriggered += OnMurdererVictory;
 		TimeUpEvent = new TriggerEvent("TimeUp", base.Relay, serverOnly: true);
 		TimeUpEvent.OnTriggered += OnTimeUp;
-		ZombieVictoryEvent = new TriggerEvent("ZombieVictory", base.Relay, serverOnly: true);
-		ZombieVictoryEvent.OnTriggered += OnZombieVictory;
-		BrainwashEvent = new TriggerEvent("Brainwash", base.Relay);
-		BrainwashEvent.OnTriggeredWithValue += OnBrainwash;
 		CorpseSpawnEvent = new TriggerEvent("CorpseSpawn", base.Relay);
 		CorpseSpawnEvent.OnTriggeredWithValue += OnCorpseSpawn;
 		try
@@ -487,7 +384,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		}
 		catch (Exception ex2)
 		{
-			MelonLogger.Warning("[FordTown] Roles Info menu unavailable: " + ex2.Message);
+			MelonLogger.Warning("[MurderLab] Roles Info menu unavailable: " + ex2.Message);
 		}
 		try
 		{
@@ -495,27 +392,8 @@ public class TroubleInFordTownGamemode : Gamemode
 		}
 		catch (Exception ex3)
 		{
-			MelonLogger.Warning("[FordTown] Win music unavailable: " + ex3.Message);
+			MelonLogger.Warning("[MurderLab] Win music unavailable: " + ex3.Message);
 		}
-		HypnotistController hypnotist = _hypnotist;
-		hypnotist.OnBrainwashComplete = (Action<ushort>)Delegate.Combine(hypnotist.OnBrainwashComplete, (Action<ushort>)delegate(ushort targetId)
-		{
-			try
-			{
-				BrainwashEvent.TryInvoke(targetId.ToString());
-			}
-			catch
-			{
-			}
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#9b30ff>BRAINWASH COMPLETE!</color>",
-				Message = "Their corpse has been turned into a Traitor.",
-				ShowPopup = true,
-				PopupLength = 4f,
-				Type = NotificationType.INFORMATION
-			});
-		});
 		LocalHealth.OnRespawn += OnLocalRespawn;
 	}
 
@@ -545,23 +423,14 @@ public class TroubleInFordTownGamemode : Gamemode
 		RoundStartedEvent = null;
 		OneMinuteLeftEvent.UnregisterEvent();
 		OneMinuteLeftEvent = null;
-		InnocentVictoryEvent.UnregisterEvent();
-		InnocentVictoryEvent = null;
-		TraitorVictoryEvent.UnregisterEvent();
-		TraitorVictoryEvent = null;
-		PsychopathVictoryEvent.UnregisterEvent();
-		PsychopathVictoryEvent = null;
-		LoneWolfVictoryEvent.UnregisterEvent();
-		LoneWolfVictoryEvent = null;
+		BystanderVictoryEvent.UnregisterEvent();
+		BystanderVictoryEvent = null;
+		MurdererVictoryEvent.UnregisterEvent();
+		MurdererVictoryEvent = null;
 		TimeUpEvent.UnregisterEvent();
 		TimeUpEvent = null;
-		ZombieVictoryEvent.UnregisterEvent();
-		ZombieVictoryEvent = null;
-		BrainwashEvent.UnregisterEvent();
-		BrainwashEvent = null;
 		CorpseSpawnEvent.UnregisterEvent();
 		CorpseSpawnEvent = null;
-		_hypnotist.Cleanup();
 		try
 		{
 			_statsPage.Unregister();
@@ -592,20 +461,15 @@ public class TroubleInFordTownGamemode : Gamemode
 		_teleportCooldown = 0;
 		_wristTextInit = false;
 		_spectatorTimer = 0f;
-		_brainwashGunGiven = false;
-		_brainwashGunRetry = 0f;
-		_hypnotistSmallID = 0;
 		_roundLengthSeconds = 0f;
+		_gunHolderSmallID = 0;
+		_currentLootCount = 0;
 		_spawnedLoadoutItems.Clear();
 		_lastKnownPositions.Clear();
 		_recentKillers.Clear();
 		_recentKillTime.Clear();
 		_recentWeapons.Clear();
 		_deadPlayers.Clear();
-		_killedJesterTime = -999f;
-		_localPrimaryBarcode = null;
-		_oneStabKnife = null;
-		OneStabState.LocalHolding = false;
 		if (KarmaManager.Enabled)
 		{
 			foreach (PlayerID playerID in PlayerIDManager.PlayerIDs)
@@ -618,20 +482,6 @@ public class TroubleInFordTownGamemode : Gamemode
 			try
 			{
 				base.Metadata.TrySetMetadata("tift_music", WinMusicEnabled ? "1" : "0");
-			}
-			catch
-			{
-			}
-			try
-			{
-				base.Metadata.TrySetMetadata("tift_onestab", OneStabKnifeEnabled ? "1" : "0");
-			}
-			catch
-			{
-			}
-			try
-			{
-				base.Metadata.TrySetMetadata("tift_hypnotist", "0");
 			}
 			catch
 			{
@@ -657,18 +507,12 @@ public class TroubleInFordTownGamemode : Gamemode
 		_oneMinuteLeft = false;
 		_localDied = false;
 		_deadPlayers.Clear();
-		_oneStabKnife = null;
-		OneStabState.LocalHolding = false;
 		ClearSpectatorEffects();
 		_wristIndicator.Destroy();
 		_roleLabels.ClearAll();
 		_holsterHider.ClearAll();
-		ZombieState.LocalIsZombie = false;
 		CorpseManager.ClearAll();
 		CorpseManager.DestroyUI();
-		TraitorShopRadial.RemoveMenuItems();
-		CustomWeapons.Reset();
-		TraitorPoints.Clear();
 		DespawnLoadoutItems();
 		Playlist.StopPlaylist();
 		LocalHealth.MortalityOverride = null;
@@ -685,26 +529,11 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	protected override void OnUpdate()
 	{
-		//IL_009c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00a1: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00ab: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00b0: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00b5: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00be: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00c0: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00c5: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00ca: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00fa: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00fb: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0108: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0109: Unknown result type (might be due to invalid IL or missing references)
 		if (!base.IsStarted)
 		{
 			return;
 		}
 		_elapsedTime += TimeReferences.DeltaTime;
-		ZombieState.LocalIsZombie = _roundStarted && TeamManager.GetLocalTeam() == ZombieTeam;
-		OneStabState.LocalHolding = _roundStarted && (Object)(object)_oneStabKnife != (Object)null && IsHeldByLocal(_oneStabKnife);
 		if (_roundStarted && !_localDied && RigData.HasPlayer)
 		{
 			try
@@ -745,26 +574,6 @@ public class TroubleInFordTownGamemode : Gamemode
 		if (_roundStarted)
 		{
 			_holsterHider.Update();
-		}
-		if (_roundStarted && TeamManager.GetLocalTeam() == TraitorTeam && IsLocalHypnotist())
-		{
-			if (!_brainwashGunGiven)
-			{
-				_brainwashGunRetry -= TimeReferences.DeltaTime;
-				if (_brainwashGunRetry <= 0f)
-				{
-					_brainwashGunRetry = 1.5f;
-					if (LocalHasBrainwashGun())
-					{
-						_brainwashGunGiven = true;
-					}
-					else if (RigData.HasPlayer)
-					{
-						GiveBrainwashGun();
-					}
-				}
-			}
-			_hypnotist.Update("JonLandon.BrainwashingGunTFT.Spawnable.BrainwashingGun");
 		}
 		if (NetworkInfo.IsHost && _stopScheduled)
 		{
@@ -824,116 +633,24 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private void AssignRoles()
 	{
-		List<PlayerID> list = new List<PlayerID>(PlayerIDManager.PlayerIDs);
-		list.Shuffle();
-		int count = list.Count;
-		int num = Math.Min(TraitorCount, Math.Max(1, count / 3));
-		for (int i = 0; i < num; i++)
-		{
-			if (list.Count <= 0)
-			{
-				break;
-			}
-			TeamManager.TryAssignTeam(list[0], TraitorTeam);
-			list.RemoveAt(0);
-		}
-		if (DetectiveEnabled && list.Count >= 2)
-		{
-			TeamManager.TryAssignTeam(list[0], DetectiveTeam);
-			list.RemoveAt(0);
-		}
-		if (count >= 4 && JesterEnabled && list.Count > 1)
-		{
-			TeamManager.TryAssignTeam(list[0], JesterTeam);
-			list.RemoveAt(0);
-		}
-		if (count >= 4 && LoneWolfEnabled && list.Count > 1)
-		{
-			TeamManager.TryAssignTeam(list[0], LoneWolfTeam);
-			list.RemoveAt(0);
-		}
-		if (count >= 4 && GlitchEnabled && list.Count > 1)
-		{
-			TeamManager.TryAssignTeam(list[0], GlitchTeam);
-			list.RemoveAt(0);
-		}
-		if (count >= 4 && ZombieEnabled && list.Count > 1)
-		{
-			TeamManager.TryAssignTeam(list[0], ZombieTeam);
-			list.RemoveAt(0);
-		}
-		_hypnotistSmallID = 0;
-		if (count >= 4 && HypnotistEnabled && list.Count > 1)
-		{
-			PlayerID playerID = list[0];
-			TeamManager.TryAssignTeam(playerID, TraitorTeam);
-			_hypnotistSmallID = playerID.SmallID;
-			list.RemoveAt(0);
-			try
-			{
-				base.Metadata.TrySetMetadata("tift_hypnotist", _hypnotistSmallID.ToString());
-			}
-			catch
-			{
-			}
-		}
-		else
-		{
-			try
-			{
-				base.Metadata.TrySetMetadata("tift_hypnotist", "0");
-			}
-			catch
-			{
-			}
-		}
-		foreach (PlayerID item in list)
-		{
-			TeamManager.TryAssignTeam(item, InnocentTeam);
-		}
+		List<PlayerID> players = new List<PlayerID>(PlayerIDManager.PlayerIDs);
+		players.Shuffle();
+
+		if (players.Count < 3) return;
+
+		TeamManager.TryAssignTeam(players[0], MurdererTeam);
+		players.RemoveAt(0);
+
+		TeamManager.TryAssignTeam(players[0], BystanderTeam);
+		_gunHolderSmallID = players[0].SmallID;
+		players.RemoveAt(0);
+
+		foreach (var p in players)
+			TeamManager.TryAssignTeam(p, BystanderTeam);
 	}
 
 	private void ShowPrepRoleText()
 	{
-		//IL_003a: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0044: Expected O, but got Unknown
-		//IL_004e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0053: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0060: Unknown result type (might be due to invalid IL or missing references)
-		//IL_006a: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0074: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0079: Unknown result type (might be due to invalid IL or missing references)
-		//IL_007e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_008a: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0094: Unknown result type (might be due to invalid IL or missing references)
-		//IL_009e: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00a3: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00a8: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00b4: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00be: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00c8: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00cd: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00d2: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00de: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00e8: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00f2: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00f7: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00fc: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0108: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0112: Unknown result type (might be due to invalid IL or missing references)
-		//IL_011c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0121: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0126: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0132: Unknown result type (might be due to invalid IL or missing references)
-		//IL_013c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0146: Unknown result type (might be due to invalid IL or missing references)
-		//IL_014b: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0150: Unknown result type (might be due to invalid IL or missing references)
-		//IL_015c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0166: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0170: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0175: Unknown result type (might be due to invalid IL or missing references)
-		//IL_017a: Unknown result type (might be due to invalid IL or missing references)
 		Team localTeam = TeamManager.GetLocalTeam();
 		if (localTeam == null)
 		{
@@ -945,9 +662,8 @@ public class TroubleInFordTownGamemode : Gamemode
 		string footer2;
 		Color titleColor;
 		Color subtitleColor;
-		if (localTeam == TraitorTeam)
+		if (localTeam == MurdererTeam)
 		{
-			// Murderer text
 			title = "You are the murderer";
 			subtitle = "Kill everyone";
 			footer1 = "Don't get caught";
@@ -955,9 +671,8 @@ public class TroubleInFordTownGamemode : Gamemode
 			titleColor = Color.red;
 			subtitleColor = Color.red;
 		}
-		else if (localTeam == DetectiveTeam)
+		else if (TeamManager.GetLocalTeam() == BystanderTeam && PlayerIDManager.LocalID != null && PlayerIDManager.LocalID.SmallID == _gunHolderSmallID)
 		{
-			// Bystander with revolver
 			title = "You are a bystander";
 			subtitle = "with a secret weapon";
 			footer1 = "There is a murderer on the loose";
@@ -967,7 +682,6 @@ public class TroubleInFordTownGamemode : Gamemode
 		}
 		else
 		{
-			// Bystander (normal)
 			title = "You are a bystander";
 			subtitle = "";
 			footer1 = "There is a murderer on the loose";
@@ -1065,13 +779,11 @@ public class TroubleInFordTownGamemode : Gamemode
 		if (_wristIndicator.TryCreate())
 		{
 			int num = (_roundStarted ? Mathf.CeilToInt(Mathf.Max(_roundLengthSeconds - _elapsedTime, 0f)) : (-1));
-			int points = TraitorPoints.Points;
 			object obj = (_roundStarted ? TeamManager.GetLocalTeam() : null);
-			if (!_wristTextInit || num != _lastWristSecond || points != _lastWristTP || obj != _lastWristTeam)
+			if (!_wristTextInit || num != _lastWristSecond || obj != _lastWristTeam)
 			{
 				_wristTextInit = true;
 				_lastWristSecond = num;
-				_lastWristTP = points;
 				_lastWristTeam = obj;
 				_wristIndicator.SetText(GetWristText());
 			}
@@ -1082,58 +794,50 @@ public class TroubleInFordTownGamemode : Gamemode
 	private string GetWristText()
 	{
 		if (!_roundStarted)
-		{
 			return "GET READY\nRoles incoming...";
-		}
-		string text = TimeSpan.FromSeconds(Mathf.Max(_roundLengthSeconds - _elapsedTime, 0f)).ToString("mm\\:ss");
+
+		string timer = TimeSpan.FromSeconds(Mathf.Max(_roundLengthSeconds - _elapsedTime, 0f)).ToString("mm\\:ss");
 		Team localTeam = TeamManager.GetLocalTeam();
-		string text2 = ((localTeam == TraitorTeam && IsLocalHypnotist()) ? $"<color={"#9b30ff"}>HYPNOTIST</color>\nTP: {TraitorPoints.Points}" : ((localTeam == TraitorTeam) ? $"<color={"#ff3333"}>TRAITOR</color>\nTP: {TraitorPoints.Points}" : ((localTeam == DetectiveTeam) ? "<color=#3399ff>DETECTIVE</color>" : ((localTeam == InnocentTeam) ? "<color=#33ff33>INNOCENT</color>" : ((localTeam == JesterTeam) ? "<color=#ff69b4>JESTER</color>" : ((localTeam == PsychopathTeam) ? "<color=#cc0000>PSYCHOPATH</color>" : ((localTeam == LoneWolfTeam) ? "<color=#ff8c00>LONE WOLF</color>" : ((localTeam == GlitchTeam) ? "<color=#00ffff>GLITCH</color>" : ((localTeam == ZombieTeam) ? "<color=#5ecc1a>ZOMBIE</color>" : ((localTeam != SpectatorTeam) ? "NO ROLE" : "<color=#aaaaaa>SPECTATING</color>"))))))))));
-		return text2 + "\n" + text;
+
+		if (localTeam == MurdererTeam)
+			return $"<color=#b40d19>MURDERER</color>\n{GetLocalRPName()} | Loot: {_currentLootCount}\n{timer}";
+		else if (localTeam == BystanderTeam)
+			return $"<color=#0d76ea>BYSTANDER</color>\n{GetLocalRPName()} | Loot: {_currentLootCount}\n{timer}";
+		else if (localTeam == SpectatorTeam)
+			return "<color=#aaaaaa>SPECTATOR</color>";
+		else
+			return "NO ROLE";
 	}
+
+	private string GetLocalRPName() => "Player";
 
 	private void SpawnLoadout()
 	{
 		Team localTeam = TeamManager.GetLocalTeam();
-		if (localTeam != SpectatorTeam && localTeam != ZombieTeam)
+		if (localTeam == SpectatorTeam) return;
+
+		if (localTeam == MurdererTeam)
 		{
-			System.Random random = new System.Random();
-			string item = Defaults.Sidearms[random.Next(Defaults.Sidearms.Length)];
-			string item2 = (_localPrimaryBarcode = Defaults.Primaries[random.Next(Defaults.Primaries.Length)]);
-			List<(string, bool)> queue = new List<(string, bool)>
-			{
-				(item, true),
-				(item2, false)
-			};
-			SpawnLoadoutQueue(queue, 0);
+			GiveMurdererKnife();
+		}
+		else if (localTeam == BystanderTeam && GetLocalSmallID() == _gunHolderSmallID)
+		{
+			SpawnLoadoutItem(Defaults.Sidearms[0], false, null);
 		}
 	}
 
-	public void GiveTraitorKnife()
+	private static ushort GetLocalSmallID()
 	{
-		GiveKnife(useOneStabIfEnabled: true);
+		PlayerID local = PlayerIDManager.LocalID;
+		return local != null ? local.SmallID : (ushort)0;
 	}
 
-	public void GiveZombieKnife()
+	public void GiveMurdererKnife()
 	{
-		GiveKnife(useOneStabIfEnabled: false);
-	}
-
-	private void GiveKnife(bool useOneStabIfEnabled)
-	{
-		bool oneStab = useOneStabIfEnabled && OneStabEnabledByHost();
-		if (oneStab && !SpawnableExists("JonLandon.TFTknife.Spawnable.TFTknife"))
-		{
-			MelonLogger.Warning("[FordTown] One-stab knife 'JonLandon.TFTknife.Spawnable.TFTknife' is not a loaded spawnable — the mod isn't installed, or the barcode is the pallet barcode instead of the CRATE/spawnable barcode (should look like Author.Pallet.Spawnable.Name). Giving the default knife instead.");
-			oneStab = false;
-		}
-		string barcode = (oneStab ? "JonLandon.TFTknife.Spawnable.TFTknife" : "c1534c5a-1fb8-477c-afbe-2a95436f6d62");
+		string barcode = "c1534c5a-1fb8-477c-afbe-2a95436f6d62";
 		SpawnLoadoutItem(barcode, preferLowSlot: true, null, delegate(GameObject go)
 		{
 			HolsterHider.RegisterLocalKnife(go);
-			if (oneStab)
-			{
-				_oneStabKnife = go;
-			}
 		});
 	}
 
@@ -1153,55 +857,6 @@ public class TroubleInFordTownGamemode : Gamemode
 		catch
 		{
 			return false;
-		}
-	}
-
-	private void MakeOneStabKnifeUngrabbable()
-	{
-		GameObject oneStabKnife = _oneStabKnife;
-		_oneStabKnife = null;
-		OneStabState.LocalHolding = false;
-		if ((Object)(object)oneStabKnife == (Object)null)
-		{
-			return;
-		}
-		try
-		{
-			LocalPlayer.ReleaseGrips();
-		}
-		catch
-		{
-		}
-		try
-		{
-			foreach (Grip componentsInChild in oneStabKnife.GetComponentsInChildren<Grip>(true))
-			{
-				if ((Object)(object)componentsInChild != (Object)null)
-				{
-					try
-					{
-						((Behaviour)componentsInChild).enabled = false;
-					}
-					catch
-					{
-					}
-				}
-			}
-		}
-		catch
-		{
-		}
-	}
-
-	private void SpawnLoadoutQueue(List<(string barcode, bool low)> queue, int index)
-	{
-		if (index < queue.Count)
-		{
-			var (barcode, preferLowSlot) = queue[index];
-			SpawnLoadoutItem(barcode, preferLowSlot, delegate
-			{
-				SpawnLoadoutQueue(queue, index + 1);
-			});
 		}
 	}
 
@@ -1291,79 +946,6 @@ public class TroubleInFordTownGamemode : Gamemode
 			{
 				GameObject val = ((obj != null) ? obj.m_CurrentAttachedGO : null);
 				if (!((Object)(object)val == (Object)null) && ((Object)(object)val == (Object)(object)go || val.transform.IsChildOf(go.transform) || go.transform.IsChildOf(val.transform)))
-				{
-					return true;
-				}
-			}
-		}
-		catch
-		{
-		}
-		return false;
-	}
-
-	private void GiveBrainwashGun()
-	{
-		if (string.IsNullOrEmpty("JonLandon.BrainwashingGunTFT.Spawnable.BrainwashingGun"))
-		{
-			_brainwashGunGiven = true;
-			MelonLogger.Warning("[FordTown] Hypnotist assigned but BrainwashGunBarcode is not set — no gun spawned.");
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#9b30ff>YOU ARE THE HYPNOTIST!</color>",
-				Message = "Brainwash a dead Innocent back to life as a Traitor by aiming your gun at their corpse.",
-				ShowPopup = true,
-				PopupLength = 8f,
-				Type = NotificationType.INFORMATION
-			});
-			return;
-		}
-		SpawnLoadoutItem("JonLandon.BrainwashingGunTFT.Spawnable.BrainwashingGun", preferLowSlot: false, null, delegate(GameObject go)
-		{
-			if (!((Object)(object)go == (Object)null))
-			{
-				_brainwashGunGiven = true;
-				Notifier.Send(new Notification
-				{
-					Title = "<color=#9b30ff>YOU ARE THE HYPNOTIST!</color>",
-					Message = "Aim your brainwashing gun at a dead Innocent's corpse for 10s to revive them as a Traitor.",
-					ShowPopup = true,
-					PopupLength = 8f,
-					Type = NotificationType.INFORMATION
-				});
-			}
-		});
-	}
-
-	private bool LocalHasBrainwashGun()
-	{
-		if (!RigData.HasPlayer)
-		{
-			return false;
-		}
-		try
-		{
-			foreach (Poolee componentsInChild in ((Component)RigData.Refs.RigManager).GetComponentsInChildren<Poolee>(true))
-			{
-				object obj;
-				if (componentsInChild == null)
-				{
-					obj = null;
-				}
-				else
-				{
-					SpawnableCrate spawnableCrate = componentsInChild.SpawnableCrate;
-					if (spawnableCrate == null)
-					{
-						obj = null;
-					}
-					else
-					{
-						Barcode barcode = ((Scannable)spawnableCrate).Barcode;
-						obj = ((barcode != null) ? barcode.ID : null);
-					}
-				}
-				if ((string?)obj == "JonLandon.BrainwashingGunTFT.Spawnable.BrainwashingGun")
 				{
 					return true;
 				}
@@ -1470,29 +1052,10 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private void OnAssignedToTeam(PlayerID player, Team team)
 	{
-		//IL_0151: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0149: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0445: Unknown result type (might be due to invalid IL or missing references)
-		//IL_043d: Unknown result type (might be due to invalid IL or missing references)
-		//IL_054f: Unknown result type (might be due to invalid IL or missing references)
 		FusionOverrides.ForceUpdateOverrides();
-		if (player.IsMe && team != null && !_roundStarted)
-		{
-			_roundStarted = true;
-		}
 		if (KarmaManager.Enabled)
 		{
 			KarmaManager.EnsurePlayer(player);
-		}
-		if (team == PsychopathTeam || team == ZombieTeam)
-		{
-			try
-			{
-				CorpseManager.RemoveCorpseOf(player.SmallID);
-			}
-			catch
-			{
-			}
 		}
 		if (team == SpectatorTeam)
 		{
@@ -1506,173 +1069,38 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			_statsPage.Refresh();
 		}
-		if (team == DetectiveTeam && !player.IsMe)
-		{
-			player.TryGetDisplayName(out var name);
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#3399ff>DETECTIVE</color>",
-				Message = name + " is the Detective!",
-				ShowPopup = true,
-				PopupLength = 5f,
-				Type = NotificationType.INFORMATION
-			});
-		}
 		if (!player.IsMe)
 		{
 			return;
 		}
-		if (team == TraitorTeam)
-		{
-			TraitorShopRadial.AddMenuItems(this);
-		}
-		else
-		{
-			TraitorShopRadial.RemoveMenuItems();
-		}
-		if (team == TraitorTeam)
-		{
-			if (_localDied)
-			{
-				_localDied = false;
-				LocalHealth.MortalityOverride = true;
-				LocalHealth.SetFullHealth();
-				MelonCoroutines.Start(ReviveAtPositionRoutine(_hasLocalDeathPos ? _localDeathPos : Vector3.zero));
-				Notifier.Send(new Notification
-				{
-					Title = "<color=#9b30ff>YOU'VE BEEN BRAINWASHED!</color>",
-					Message = "The Hypnotist revived you — you are now a TRAITOR. Eliminate the Innocents!",
-					ShowPopup = true,
-					PopupLength = 8f,
-					Type = NotificationType.INFORMATION
-				});
-			}
-			else
-			{
-				Notifier.Send(new Notification
-				{
-					Title = "<color=#ff3333>YOU ARE A TRAITOR!</color>",
-					Message = "Eliminate all Innocents. Open the Traitor Shop in the radial menu!",
-					ShowPopup = true,
-					PopupLength = 6f,
-					Type = NotificationType.INFORMATION
-				});
-			}
-		}
-		else if (team == InnocentTeam)
+		if (team == MurdererTeam)
 		{
 			Notifier.Send(new Notification
 			{
-				Title = "<color=#33ff33>YOU ARE INNOCENT!</color>",
-				Message = "Find and eliminate the Traitors!",
+				Title = "<color=#b40d19>YOU ARE THE MURDERER!</color>",
+				Message = "Eliminate all Bystanders. Use your knife!",
 				ShowPopup = true,
 				PopupLength = 6f,
 				Type = NotificationType.INFORMATION
 			});
 		}
-		else if (team == DetectiveTeam)
+		else if (team == BystanderTeam)
 		{
 			Notifier.Send(new Notification
 			{
-				Title = "<color=#3399ff>YOU ARE THE DETECTIVE!</color>",
-				Message = "Lead the Innocents and find the Traitors!",
+				Title = "<color=#0d76ea>YOU ARE A BYSTANDER!</color>",
+				Message = "There is a Murderer among you. Stay alive!",
 				ShowPopup = true,
 				PopupLength = 6f,
 				Type = NotificationType.INFORMATION
 			});
 		}
-		else if (team == JesterTeam)
+		else if (team == SpectatorTeam)
 		{
 			Notifier.Send(new Notification
 			{
-				Title = "<color=#ff69b4>YOU ARE THE JESTER!</color>",
-				Message = "Trick an Innocent into killing you to become the Psychopath! If a Traitor kills you instead, you lose.",
-				ShowPopup = true,
-				PopupLength = 8f,
-				Type = NotificationType.INFORMATION
-			});
-		}
-		else if (team == PsychopathTeam)
-		{
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#cc0000>YOU ARE NOW THE PSYCHOPATH!</color>",
-				Message = "Second chance! Kill everyone to win!",
-				ShowPopup = true,
-				PopupLength = 6f,
-				Type = NotificationType.INFORMATION
-			});
-			LocalHealth.MortalityOverride = true;
-			LocalHealth.VitalityOverride = 1.5f;
-			try
-			{
-				GamemodeHelper.TeleportToSpawnPoint();
-			}
-			catch
-			{
-			}
-			MelonCoroutines.Start(RevicePsychopathRoutine());
-			if (!string.IsNullOrEmpty(_localPrimaryBarcode))
-			{
-				SpawnLoadoutItem(_localPrimaryBarcode);
-			}
-		}
-		else if (team == LoneWolfTeam)
-		{
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#ff8c00>YOU ARE THE LONE WOLF!</color>",
-				Message = "Kill everyone and be the last one standing to win!",
-				ShowPopup = true,
-				PopupLength = 6f,
-				Type = NotificationType.INFORMATION
-			});
-		}
-		else if (team == GlitchTeam)
-		{
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#00ffff>YOU ARE THE GLITCH!</color>",
-				Message = "You appear as a Traitor to Traitors — but you're secretly Innocent. Help Innocents win from the inside!",
-				ShowPopup = true,
-				PopupLength = 8f,
-				Type = NotificationType.INFORMATION
-			});
-		}
-		else if (team == ZombieTeam)
-		{
-			bool localDied = _localDied;
-			if (localDied)
-			{
-				_localDied = false;
-				LocalHealth.MortalityOverride = true;
-				LocalHealth.SetFullHealth();
-				MelonCoroutines.Start(ReviveAtPositionRoutine(_hasLocalDeathPos ? _localDeathPos : Vector3.zero));
-			}
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#5ecc1a>YOU ARE A ZOMBIE!</color>",
-				Message = (localDied ? "You've been infected! Stab others with your knife to turn them into Zombies too." : "Patient zero! Stab others with your knife to spread the infection. Turn everyone!"),
-				ShowPopup = true,
-				PopupLength = 8f,
-				Type = NotificationType.INFORMATION
-			});
-			GiveZombieKnife();
-		}
-		else
-		{
-			if (team != SpectatorTeam || !_roundStarted)
-			{
-				return;
-			}
-			bool num = Time.time - _killedJesterTime <= 5f;
-			_killedJesterTime = -999f;
-			string text = (num ? "<color=#ff69b4>THE JESTER TRICKED YOU!</color>" : "YOU ARE NOW SPECTATING");
-			string text2 = (num ? "You killed the Jester — now you pay for it. Spectate until the round ends." : "You can hear other dead players. Wait for the round to end.");
-			Notifier.Send(new Notification
-			{
-				Title = text,
-				Message = text2,
+				Title = "<color=#aaaaaa>YOU ARE NOW SPECTATING</color>",
+				Message = "You can hear other dead players. Wait for the round to end.",
 				ShowPopup = true,
 				PopupLength = 5f,
 				Type = NotificationType.WARNING
@@ -1683,14 +1111,15 @@ public class TroubleInFordTownGamemode : Gamemode
 				try
 				{
 					GamemodeHelper.TeleportToSpawnPoint();
-					return;
 				}
 				catch
 				{
-					return;
 				}
 			}
-			MelonCoroutines.Start(MoveSpectatorToBodyRoutine(_localDeathPos));
+			else
+			{
+				MelonCoroutines.Start(MoveSpectatorToBodyRoutine(_localDeathPos));
+			}
 		}
 	}
 
@@ -1725,62 +1154,6 @@ public class TroubleInFordTownGamemode : Gamemode
 		if (TeamManager.GetLocalTeam() != SpectatorTeam)
 		{
 			LocalInventory.SetAmmo(100000);
-		}
-		if (TeamManager.GetLocalTeam() != TraitorTeam)
-		{
-			return;
-		}
-		TraitorPoints.Reset();
-		_statsPage.Refresh();
-		List<string> list = new List<string>();
-		foreach (byte player in TraitorTeam.Players)
-		{
-			PlayerID playerID = FindPlayerBySmallID(player);
-			if (playerID != null && !playerID.IsMe && playerID.TryGetDisplayName(out var name))
-			{
-				list.Add(name);
-			}
-		}
-		foreach (byte player2 in GlitchTeam.Players)
-		{
-			PlayerID playerID2 = FindPlayerBySmallID(player2);
-			if (playerID2 != null && playerID2.TryGetDisplayName(out var name2))
-			{
-				list.Add(name2);
-			}
-		}
-		string text = ((list.Count > 0) ? ("Your crew: " + string.Join(", ", list)) : "You are the only Traitor.");
-		Notifier.Send(new Notification
-		{
-			Title = "<color=#ff3333>TRAITORS</color>",
-			Message = text,
-			ShowPopup = true,
-			PopupLength = 7f,
-			Type = NotificationType.INFORMATION
-		});
-		if (JesterTeam.PlayerCount <= 0)
-		{
-			return;
-		}
-		List<string> list2 = new List<string>();
-		foreach (byte player3 in JesterTeam.Players)
-		{
-			PlayerID playerID3 = FindPlayerBySmallID(player3);
-			if (playerID3 != null && playerID3.TryGetDisplayName(out var name3))
-			{
-				list2.Add(name3);
-			}
-		}
-		if (list2.Count > 0)
-		{
-			Notifier.Send(new Notification
-			{
-				Title = "<color=#ff69b4>JESTER ALERT</color>",
-				Message = "Jester: " + string.Join(", ", list2) + " — if an Innocent kills them, they become Psychopath!",
-				ShowPopup = true,
-				PopupLength = 6f,
-				Type = NotificationType.WARNING
-			});
 		}
 	}
 
@@ -1823,11 +1196,6 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private void OnPlayerDeath(PlayerID player)
 	{
-		//IL_0187: Unknown result type (might be due to invalid IL or missing references)
-		//IL_017f: Unknown result type (might be due to invalid IL or missing references)
-		//IL_002c: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0031: Unknown result type (might be due to invalid IL or missing references)
-		//IL_018c: Unknown result type (might be due to invalid IL or missing references)
 		if (_roundStarted)
 		{
 			_deadPlayers.Add(player.SmallID);
@@ -1854,53 +1222,8 @@ public class TroubleInFordTownGamemode : Gamemode
 		if (_roundStarted && player.IsMe)
 		{
 			Team playerTeam = TeamManager.GetPlayerTeam(player);
-			string text;
-			string text2;
-			if (playerTeam == TraitorTeam)
-			{
-				text = "Traitor";
-				text2 = "#ff3333";
-			}
-			else if (playerTeam == DetectiveTeam)
-			{
-				text = "Detective";
-				text2 = "#3399ff";
-			}
-			else if (playerTeam == JesterTeam)
-			{
-				text = "Jester";
-				text2 = "#ff69b4";
-			}
-			else if (playerTeam == PsychopathTeam)
-			{
-				text = "Psychopath";
-				text2 = "#cc0000";
-			}
-			else if (playerTeam == LoneWolfTeam)
-			{
-				text = "Lone Wolf";
-				text2 = "#ff8c00";
-			}
-			else if (playerTeam == GlitchTeam)
-			{
-				text = "Innocent";
-				text2 = "#33ff33";
-			}
-			else if (playerTeam == ZombieTeam)
-			{
-				text = "Zombie";
-				text2 = "#5ecc1a";
-			}
-			else if (playerTeam == SpectatorTeam)
-			{
-				text = "Spectator";
-				text2 = "#aaaaaa";
-			}
-			else
-			{
-				text = "Innocent";
-				text2 = "#33ff33";
-			}
+			string text = (playerTeam == MurdererTeam) ? "Murderer" : ((playerTeam == BystanderTeam) ? "Bystander" : "Spectator");
+			string text2 = (playerTeam == MurdererTeam) ? "#b40d19" : "#0d76ea";
 			string value;
 			string text3 = (_recentWeapons.TryGetValue(player.SmallID, out value) ? value : "");
 			string text4 = "";
@@ -1926,96 +1249,15 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			KarmaManager.AwardRoundBonus(player);
 		}
-		if (!NetworkInfo.IsHost || !_roundStarted)
+		if (NetworkInfo.IsHost && _roundStarted)
 		{
-			return;
-		}
-		if (JesterTeam.HasPlayer(player))
-		{
-			switch (ResolveJesterDeath(player))
+			if (SpectatorTeam.HasPlayer(player))
 			{
-			case JesterDeath.BecamePsychopath:
-				return;
-			case JesterDeath.NoKillerYet:
-				MelonCoroutines.Start(ResolveJesterDeathLater(player));
 				return;
 			}
-		}
-		FinishDeathResolution(player);
-	}
-
-	private JesterDeath ResolveJesterDeath(PlayerID player)
-	{
-		if (!_recentKillTime.TryGetValue(player.SmallID, out var value) || !(Time.time - value <= 4f) || !_recentKillers.TryGetValue(player.SmallID, out var value2))
-		{
-			return JesterDeath.NoKillerYet;
-		}
-		PlayerID playerID = FindPlayerBySmallID(value2);
-		Team team = ((playerID != null) ? TeamManager.GetPlayerTeam(playerID) : null);
-		if (team == null)
-		{
-			return JesterDeath.NoKillerYet;
-		}
-		_recentKillers.Remove(player.SmallID);
-		_recentKillTime.Remove(player.SmallID);
-		if (team == InnocentTeam || team == DetectiveTeam || team == GlitchTeam)
-		{
-			TeamManager.TryAssignTeam(player, PsychopathTeam);
-			if (playerID != null && !SpectatorTeam.HasPlayer(playerID))
-			{
-				TeamManager.TryAssignTeam(playerID, SpectatorTeam);
-			}
-			CheckWinConditions();
-			return JesterDeath.BecamePsychopath;
-		}
-		return JesterDeath.KilledByEnemy;
-	}
-
-	private IEnumerator ResolveJesterDeathLater(PlayerID player)
-	{
-		float deadline = Time.time + 2f;
-		while (Time.time < deadline)
-		{
-			yield return (object)new WaitForSeconds(0.15f);
-			if (player == null || !base.IsStarted || !NetworkInfo.IsHost || !JesterTeam.HasPlayer(player))
-			{
-				yield break;
-			}
-			JesterDeath jesterDeath = ResolveJesterDeath(player);
-			if (jesterDeath == JesterDeath.BecamePsychopath)
-			{
-				yield break;
-			}
-			if (jesterDeath == JesterDeath.KilledByEnemy)
-			{
-				break;
-			}
-		}
-		if (base.IsStarted && NetworkInfo.IsHost && JesterTeam.HasPlayer(player))
-		{
-			FinishDeathResolution(player);
-		}
-	}
-
-	private void FinishDeathResolution(PlayerID player)
-	{
-		if (!ZombieTeam.HasPlayer(player) && _recentKillTime.TryGetValue(player.SmallID, out var value) && Time.time - value <= 4f && _recentKillers.TryGetValue(player.SmallID, out var value2))
-		{
-			PlayerID playerID = FindPlayerBySmallID(value2);
-			if (playerID != null && ZombieTeam.HasPlayer(playerID))
-			{
-				_recentKillers.Remove(player.SmallID);
-				_recentKillTime.Remove(player.SmallID);
-				TeamManager.TryAssignTeam(player, ZombieTeam);
-				CheckWinConditions();
-				return;
-			}
-		}
-		if (!SpectatorTeam.HasPlayer(player))
-		{
 			TeamManager.TryAssignTeam(player, SpectatorTeam);
+			CheckWinConditions(player);
 		}
-		CheckWinConditions(player);
 	}
 
 	private void OnPlayerKilled(PlayerID victim, PlayerID killer)
@@ -2024,101 +1266,13 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			return;
 		}
-		Team localTeam = TeamManager.GetLocalTeam();
 		Team playerTeam = TeamManager.GetPlayerTeam(victim);
 		if (playerTeam == SpectatorTeam)
 		{
 			return;
 		}
-		if ((Object)(object)_oneStabKnife != (Object)null && IsHeldByLocal(_oneStabKnife))
-		{
-			MakeOneStabKnifeUngrabbable();
-		}
-		if (playerTeam == JesterTeam && (localTeam == InnocentTeam || localTeam == DetectiveTeam || localTeam == GlitchTeam))
-		{
-			_killedJesterTime = Time.time;
-		}
-		bool flag = localTeam == TraitorTeam;
-		bool flag2 = localTeam == GlitchTeam;
-		bool flag3 = playerTeam == TraitorTeam;
-		bool flag4 = playerTeam == GlitchTeam;
-		bool flag5 = playerTeam == InnocentTeam || playerTeam == DetectiveTeam;
-		if (flag && flag4)
-		{
-			return;
-		}
-		bool flag6 = (flag && !flag3) || (!flag && !flag2 && flag3) || (flag2 && flag3);
-		if (flag6)
-		{
-			PointItemManager.RewardBits(50);
-		}
-		if (KarmaManager.Enabled)
-		{
-			if (flag6)
-			{
-				KarmaManager.AdjustKarma(PlayerIDManager.LocalID, 200);
-			}
-			else if (flag && flag3)
-			{
-				KarmaManager.AdjustKarma(PlayerIDManager.LocalID, -400);
-			}
-			else if (!flag && flag5)
-			{
-				KarmaManager.AdjustKarma(PlayerIDManager.LocalID, -300);
-			}
-		}
-		if (flag && !flag3 && !flag4)
-		{
-			TraitorPoints.AddKillReward();
-		}
-		if (flag)
-		{
-			CustomWeapons.OnLocalKill();
-		}
-	}
-
-	private static IEnumerator RevicePsychopathRoutine()
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			try
-			{
-				if (RigData.HasPlayer)
-				{
-					LocalHealth.SetFullHealth();
-					LocalRagdoll.ToggleRagdoll(ragdolled: false);
-				}
-			}
-			catch
-			{
-			}
-			yield return (object)new WaitForSeconds(0.15f);
-		}
-	}
-
-	private static IEnumerator ReviveAtPositionRoutine(Vector3 pos)
-	{
-		//IL_0007: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0008: Unknown result type (might be due to invalid IL or missing references)
-		for (int i = 0; i < 12; i++)
-		{
-			try
-			{
-				if (RigData.HasPlayer)
-				{
-					LocalHealth.SetFullHealth();
-					LocalRagdoll.ToggleRagdoll(ragdolled: false);
-					if (pos != Vector3.zero)
-					{
-						RigData.Refs.RigManager.TeleportToPosition(pos + Vector3.up * 0.1f);
-					}
-				}
-			}
-			catch
-			{
-			}
-			yield return (object)new WaitForSeconds(0.12f);
-		}
+		TeamManager.TryAssignTeam(victim, SpectatorTeam);
+		CheckWinConditions(victim);
 	}
 
 	private Vector3 GetDeathPosition(PlayerID player)
@@ -2181,48 +1335,23 @@ public class TroubleInFordTownGamemode : Gamemode
 	{
 		if (!_gameEnded)
 		{
-			int num = CountAlive(TraitorTeam, dyingPlayer);
-			int num2 = CountAlive(InnocentTeam, dyingPlayer) + CountAlive(DetectiveTeam, dyingPlayer) + CountAlive(GlitchTeam, dyingPlayer);
-			int num3 = CountAlive(PsychopathTeam, dyingPlayer);
-			int num4 = CountAlive(LoneWolfTeam, dyingPlayer);
-			int num5 = CountAlive(JesterTeam, dyingPlayer);
-			int num6 = CountAlive(ZombieTeam, dyingPlayer);
-			bool flag = num2 > 0 && num == 0 && num3 == 0 && num4 == 0 && num5 == 0 && num6 == 0;
-			bool flag2 = num > 0 && num2 == 0 && num3 == 0 && num4 == 0 && num5 == 0 && num6 == 0;
-			bool num7 = num3 > 0 && num2 == 0 && num == 0 && num4 == 0 && num5 == 0 && num6 == 0;
-			bool flag3 = num4 > 0 && num2 == 0 && num == 0 && num3 == 0 && num5 == 0 && num6 == 0;
-			bool flag4 = num6 > 0 && num2 == 0 && num == 0 && num3 == 0 && num4 == 0 && num5 == 0;
-			if (num7)
+			int num = CountAlive(MurdererTeam, dyingPlayer);
+			int num2 = CountAlive(BystanderTeam, dyingPlayer);
+			bool bystandersWin = num2 > 0 && num == 0;
+			bool murderersWin = num > 0 && num2 == 0;
+			if (murderersWin)
 			{
 				_gameEnded = true;
-				PsychopathVictoryEvent.TryInvoke();
-				ScheduleStop(WinMusic.GetMaxDuration(WinSide.Jester, WinMusicEnabled));
-			}
-			else if (flag3)
-			{
-				_gameEnded = true;
-				LoneWolfVictoryEvent.TryInvoke();
-				ScheduleStop(WinMusic.GetMaxDuration(WinSide.LoneWolf, WinMusicEnabled));
-			}
-			else if (flag2)
-			{
-				_gameEnded = true;
-				TraitorVictoryEvent.TryInvoke();
+				MurdererVictoryEvent.TryInvoke();
 				ScheduleStop(WinMusic.GetMaxDuration(WinSide.Traitors, WinMusicEnabled));
 			}
-			else if (flag)
+			else if (bystandersWin)
 			{
 				_gameEnded = true;
-				InnocentVictoryEvent.TryInvoke();
+				BystanderVictoryEvent.TryInvoke();
 				ScheduleStop(WinMusic.GetMaxDuration(WinSide.Innocents, WinMusicEnabled));
 			}
-			else if (flag4)
-			{
-				_gameEnded = true;
-				ZombieVictoryEvent.TryInvoke();
-				ScheduleStop(0f);
-			}
-			else if (num2 == 0 && num == 0 && num3 == 0 && num4 == 0 && num6 == 0)
+			else if (num2 == 0 && num == 0)
 			{
 				_gameEnded = true;
 				ScheduleStop(0f);
@@ -2283,70 +1412,6 @@ public class TroubleInFordTownGamemode : Gamemode
 		return true;
 	}
 
-	private bool OneStabEnabledByHost()
-	{
-		try
-		{
-			if (base.Metadata.TryGetMetadata("tift_onestab", out var value))
-			{
-				return value == "1";
-			}
-		}
-		catch
-		{
-		}
-		return OneStabKnifeEnabled;
-	}
-
-	private ushort GetHypnotistSmallID()
-	{
-		try
-		{
-			if (base.Metadata.TryGetMetadata("tift_hypnotist", out var value) && ushort.TryParse(value, out var result))
-			{
-				return result;
-			}
-		}
-		catch
-		{
-		}
-		return _hypnotistSmallID;
-	}
-
-	private bool IsLocalHypnotist()
-	{
-		PlayerID localID = PlayerIDManager.LocalID;
-		if (localID != null && GetHypnotistSmallID() != 0)
-		{
-			return localID.SmallID == GetHypnotistSmallID();
-		}
-		return false;
-	}
-
-	private void OnBrainwash(string value)
-	{
-		if (!ushort.TryParse(value, out var result) || result == 0)
-		{
-			return;
-		}
-		try
-		{
-			CorpseManager.RemoveCorpseOf(result);
-		}
-		catch
-		{
-		}
-		if (NetworkInfo.IsHost && _roundStarted)
-		{
-			PlayerID playerID = FindPlayerBySmallID(result);
-			if (playerID != null && SpectatorTeam.HasPlayer(playerID))
-			{
-				TeamManager.TryAssignTeam(playerID, TraitorTeam);
-				CheckWinConditions();
-			}
-		}
-	}
-
 	private void OnCorpseSpawn(string value)
 	{
 		//IL_00bb: Unknown result type (might be due to invalid IL or missing references)
@@ -2369,7 +1434,7 @@ public class TroubleInFordTownGamemode : Gamemode
 				{
 					playerName = name;
 				}
-				bool wasInnocentSide = text == "Innocent" || text == "Detective";
+				bool wasInnocentSide = text == "Bystander";
 				CorpseManager.RegisterDeath(playerName, text, roleColor, deathPosition, weaponName, avatarBarcode, num, wasInnocentSide);
 			}
 		}
@@ -2460,55 +1525,33 @@ public class TroubleInFordTownGamemode : Gamemode
 	{
 		Notifier.Send(new Notification
 		{
-			Title = "Trouble In FordTown",
-			Message = "One minute left! Traitors, hurry up!",
+			Title = "MurderLab",
+			Message = "One minute left!",
 			ShowPopup = true,
 			PopupLength = 4f,
 			Type = NotificationType.INFORMATION
 		});
 	}
 
-	private void OnInnocentVictory()
+	private void OnBystanderVictory()
 	{
 		WinMusic.PlayWin(WinSide.Innocents, SongsEnabledByHost());
-		Team localTeam = TeamManager.GetLocalTeam();
-		bool localWon = localTeam == InnocentTeam || localTeam == DetectiveTeam || localTeam == GlitchTeam;
-		SendVictoryNotification("<color=#33ff33>INNOCENTS WIN!</color>", "All Traitors have been eliminated!", localWon);
+		bool localWon = TeamManager.GetLocalTeam() == BystanderTeam;
+		SendVictoryNotification("<color=#0d76ea>BYSTANDERS WIN!</color>", "The Murderer has been eliminated!", localWon);
 	}
 
-	private void OnTraitorVictory()
+	private void OnMurdererVictory()
 	{
 		WinMusic.PlayWin(WinSide.Traitors, SongsEnabledByHost());
-		bool localWon = TeamManager.GetLocalTeam() == TraitorTeam;
-		SendVictoryNotification("<color=#ff3333>TRAITORS WIN!</color>", "All Innocents have been eliminated!", localWon);
-	}
-
-	private void OnPsychopathVictory()
-	{
-		WinMusic.PlayWin(WinSide.Jester, SongsEnabledByHost());
-		bool localWon = TeamManager.GetLocalTeam() == PsychopathTeam;
-		SendVictoryNotification("<color=#ff69b4>JESTER WINS!</color>", "The Jester got the last laugh — everyone else is dead!", localWon);
-	}
-
-	private void OnLoneWolfVictory()
-	{
-		WinMusic.PlayWin(WinSide.LoneWolf, SongsEnabledByHost());
-		bool localWon = TeamManager.GetLocalTeam() == LoneWolfTeam;
-		SendVictoryNotification("<color=#ff8c00>LONE WOLF WINS!</color>", "The Lone Wolf outlasted everyone!", localWon);
-	}
-
-	private void OnZombieVictory()
-	{
-		bool localWon = TeamManager.GetLocalTeam() == ZombieTeam;
-		SendVictoryNotification("<color=#5ecc1a>ZOMBIES WIN!</color>", "The infection spread to everyone!", localWon);
+		bool localWon = TeamManager.GetLocalTeam() == MurdererTeam;
+		SendVictoryNotification("<color=#b40d19>MURDERER WINS!</color>", "All Bystanders have been eliminated!", localWon);
 	}
 
 	private void OnTimeUp()
 	{
 		WinMusic.PlayWin(WinSide.Innocents, SongsEnabledByHost());
-		Team localTeam = TeamManager.GetLocalTeam();
-		bool localWon = localTeam == InnocentTeam || localTeam == DetectiveTeam || localTeam == GlitchTeam;
-		SendVictoryNotification("<color=#33ff33>INNOCENTS WIN!</color>", "The Traitors ran out of time!", localWon);
+		bool localWon = TeamManager.GetLocalTeam() == BystanderTeam;
+		SendVictoryNotification("<color=#0d76ea>BYSTANDERS WIN!</color>", "The Murderer ran out of time!", localWon);
 	}
 
 	private void SendVictoryNotification(string title, string message, bool localWon)
@@ -2539,17 +1582,9 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			return true;
 		}
-		if (localTeam == TraitorTeam)
+		if (localTeam == MurdererTeam)
 		{
-			if (!TraitorTeam.HasPlayer(id))
-			{
-				return GlitchTeam.HasPlayer(id);
-			}
-			return true;
-		}
-		if (localTeam == ZombieTeam)
-		{
-			return ZombieTeam.HasPlayer(id);
+			return MurdererTeam.HasPlayer(id);
 		}
 		return false;
 	}

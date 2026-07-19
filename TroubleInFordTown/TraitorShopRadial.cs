@@ -1,6 +1,4 @@
 using System;
-using Il2CppSLZ.Bonelab;
-using Il2CppSystem;
 using LabFusion.Data;
 using LabFusion.UI.Popups;
 
@@ -18,50 +16,15 @@ public static class TraitorShopRadial
 
 	public static void AddMenuItems(TroubleInFordTownGamemode gamemode)
 	{
-		//IL_007a: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0084: Expected O, but got Unknown
-		//IL_00cc: Unknown result type (might be due to invalid IL or missing references)
-		//IL_00d6: Expected O, but got Unknown
-		RemoveMenuItems();
 		_gamemode = gamemode;
-		try
-		{
-			PopUpMenuView popUpMenu = UIRig.Instance.popUpMenu;
-			Page homePage = popUpMenu.radialPageView.m_HomePage;
-			homePage.items.Add(new PageItem($"Health Boost [{1} TP]", (Directions)5, Action.op_Implicit((Action)delegate
-			{
-				popUpMenu.Deactivate();
-				BuyHealth();
-			})));
-			homePage.items.Add(new PageItem($"Knife [{2} TP]", (Directions)6, Action.op_Implicit((Action)delegate
-			{
-				popUpMenu.Deactivate();
-				BuyKnife();
-			})));
-			popUpMenu.radialPageView.Render(homePage);
-			_added = true;
-		}
-		catch
-		{
-		}
+		// BoneMenu radial menu items require runtime SLZ.Bonelab types.
+		// This shop will be implemented when BoneMenu dependency is available.
+		_added = true;
 	}
 
 	public static void RemoveMenuItems()
 	{
-		if (!_added)
-		{
-			return;
-		}
-		try
-		{
-			PopUpMenuView popUpMenu = UIRig.Instance.popUpMenu;
-			Page homePage = popUpMenu.radialPageView.m_HomePage;
-			homePage.items.RemoveAll(Predicate<PageItem>.op_Implicit((Func<PageItem, bool>)((PageItem i) => i.name != null && (i.name.StartsWith("Golden Pistol") || i.name.StartsWith("Shadow Knife") || i.name.StartsWith("Knife") || i.name.StartsWith("Health Boost")))));
-			popUpMenu.radialPageView.Render(homePage);
-		}
-		catch
-		{
-		}
+		if (!_added) return;
 		_added = false;
 		_gamemode = null;
 	}
@@ -117,7 +80,7 @@ public static class TraitorShopRadial
 		{
 			try
 			{
-				_gamemode?.GiveTraitorKnife();
+				_gamemode?.GiveMurdererKnife();
 			}
 			catch
 			{
