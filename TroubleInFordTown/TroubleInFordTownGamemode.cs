@@ -139,6 +139,8 @@ public class TroubleInFordTownGamemode : Gamemode
 
 	private readonly HolsterHider _holsterHider = new HolsterHider();
 
+	private readonly NametagSystem _nametagSystem = new NametagSystem();
+
 	private readonly BlackScreenController _blackScreen = new BlackScreenController();
 
 	private bool _prepRolesRevealed;
@@ -528,6 +530,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		_roleLabels.ClearAll();
 		_holsterHider.ClearAll();
 		_lootManager.OnRoundEnd();
+		_nametagSystem.OnRoundEnd();
 		CorpseManager.ClearAll();
 		CorpseManager.DestroyUI();
 		DespawnLoadoutItems();
@@ -589,6 +592,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		CorpseManager.Update();
 		_lootManager.Update();
 		_roleLabels.Update(this);
+		_nametagSystem.Update(this);
 		if (_roundStarted)
 		{
 			_holsterHider.Update();
@@ -827,7 +831,7 @@ public class TroubleInFordTownGamemode : Gamemode
 			return "NO ROLE";
 	}
 
-	private string GetLocalRPName() => "Player";
+	private string GetLocalRPName() => _nametagSystem.GetLocalRPName();
 
 	private void SpawnLoadout()
 	{
@@ -1174,6 +1178,7 @@ public class TroubleInFordTownGamemode : Gamemode
 			LocalInventory.SetAmmo(100000);
 		}
 		_lootManager.OnRoundStart();
+		_nametagSystem.OnRoundStart();
 		_lootManager.OnLootThresholdReached += OnLootThresholdReached;
 	}
 
@@ -1611,15 +1616,7 @@ public class TroubleInFordTownGamemode : Gamemode
 		{
 			return true;
 		}
-		Team localTeam = TeamManager.GetLocalTeam();
-		if (localTeam == SpectatorTeam)
-		{
-			return true;
-		}
-		if (localTeam == MurdererTeam)
-		{
-			return MurdererTeam.HasPlayer(id);
-		}
+		// Our NametagSystem handles all nametag rendering during rounds
 		return false;
 	}
 
